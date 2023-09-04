@@ -56,7 +56,15 @@ async def _main():
 def main():
     # Setup logging.
     logging.basicConfig(format='!! %(levelname)s: %(message)s')
-    asyncio.get_event_loop().run_until_complete(_main())
+
+    # Python 3.10+
+    try:
+        loop = asyncio.get_event_loop()
+    except Exception:
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+
+    loop.run_until_complete(_main())
 
 
 if __name__ == '__main__':

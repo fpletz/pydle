@@ -2,7 +2,7 @@
 # Basic IRC client implementation.
 import asyncio
 import logging
-from asyncio import new_event_loop, gather, get_event_loop, sleep
+from asyncio import new_event_loop, gather, get_event_loop, new_event_loop, set_event_loop, sleep
 import warnings
 from . import connection, protocol
 import inspect
@@ -66,7 +66,12 @@ class BasicClient:
         if eventloop:
             self.eventloop = eventloop
         else:
-            self.eventloop = get_event_loop()
+            # Python 3.10+
+            try:
+                self.eventloop = get_event_loop()
+            except Exception:
+                self.eventloop = new_event_loop()
+                set_event_loop(self.eventloop)
 
         self.own_eventloop = not eventloop
         self._reset_connection_attributes()

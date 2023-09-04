@@ -45,12 +45,26 @@ class Connection:
         if self.tls:
             self.tls_context = self.create_tls_context()
 
-        (self.reader, self.writer) = await asyncio.open_connection(
+        self.reader = asyncio.streams.StreamReader(
+            limit=asyncio.streams._DEFAULT_LIMIT,
+            loop=self.eventloop
+        )
+        protocol = asyncio.streams.StreamReaderProtocol(
+            self.reader,
+            loop=self.eventloop
+        )
+        transport, _ = await self.eventloop.create_connection(
+            lambda: protocol,
             host=self.hostname,
             port=self.port,
             local_addr=self.source_address,
-            ssl=self.tls_context,
-            loop=self.eventloop
+            ssl=self.tls_context
+        )
+        self.writer = asyncio.streams.StreamWriter(
+            transport,
+            protocol,
+            self.reader,
+            self.eventloop
         )
 
     def create_tls_context(self):
